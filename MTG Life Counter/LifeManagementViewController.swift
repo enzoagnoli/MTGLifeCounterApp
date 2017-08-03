@@ -8,7 +8,7 @@
 
 import UIKit
 
-class LifeManagementViewController: UIViewController, OptionsViewControllerProtocol{
+class LifeManagementViewController: UIViewController, OptionsViewControllerProtocol, UIGestureRecognizerDelegate {
     
     var playerOne = Player(name:"Player One")
     var playerTwo = Player(name:"Player Two")
@@ -81,10 +81,10 @@ class LifeManagementViewController: UIViewController, OptionsViewControllerProto
     @IBOutlet weak var playerTwoPoisonView: UIView!
     @IBOutlet weak var playerTwoEnergyView: UIView!
     @IBOutlet weak var playerTwoExperienceView: UIView!
-    
-    @IBOutlet weak var playerOneSwitchPreviousCounterViewButton: UIButton!
-    @IBOutlet weak var playerTwoSwitchPreviousCounterViewButton: UIButton!
-    
+//    
+//    @IBOutlet weak var playerOneSwitchPreviousCounterViewButton: UIButton!
+//    @IBOutlet weak var playerTwoSwitchPreviousCounterViewButton: UIButton!
+//    
     @IBOutlet weak var playerOnePreviousCounterSuperView: UIView!
     @IBOutlet weak var playerTwoPreviousCounterSuperView: UIView!
     
@@ -139,7 +139,7 @@ class LifeManagementViewController: UIViewController, OptionsViewControllerProto
     
     @IBAction func playerTwoPoisonUpButton(_ sender: Any) {
         playerTwo.previousPoisonTotals.append(playerTwo.poisonTotal)
-        updatePlayerOnePoisonTotalHistory ()
+        updatePlayerTwoPoisonTotalHistory ()
         playerTwo.poisonTotal = playerTwo.poisonTotal + 1
         playerTwoPoisonTotalLabel.text = String(playerTwo.poisonTotal)
     }
@@ -254,25 +254,62 @@ class LifeManagementViewController: UIViewController, OptionsViewControllerProto
         playerTwo.experienceHistory = playerTwo.experienceHistoryStringArray.joined(separator: "\n \n")
         playerTwoPreviousExperienceTotalTextView.text = playerTwo.experienceHistory
     }
-// swith previous counter total views
+    // swith previous counter total views
+    var playerOneTopmostTextView: UITextView!
+    var playerTwoTopmostTextView: UITextView!
+    
     func playerOneMultipleTap(_ sender: UIButton, event: UIEvent) {
-        let touch: UITouch = event.allTouches!.first!
-        if (touch.tapCount == 2) {
-            //playerOnePreviousCounterSuperView.sendSubview(toBack: <#T##UIView#>)
+        var nextTopTextView : UITextView!
+        if playerOneTopmostTextView == playerOnePreviousLifeTotalTextView {
+            nextTopTextView = playerOnePreviousPoisonTotalTextView
+        } else if playerOneTopmostTextView == playerOnePreviousPoisonTotalTextView {
+            nextTopTextView = playerOnePreviousEnergyTotalTextView
+        } else if playerOneTopmostTextView == playerOnePreviousEnergyTotalTextView {
+            nextTopTextView = playerOnePreviousExperienceTotalTextView
+        } else if playerOneTopmostTextView == playerOnePreviousExperienceTotalTextView {
+            nextTopTextView = playerOnePreviousLifeTotalTextView
         }
+        playerOnePreviousCounterSuperView.bringSubview(toFront: nextTopTextView)
+        //playerOnePreviousCounterSuperView.bringSubview(toFront: playerOneSwitchPreviousCounterViewButton)
+        playerOneTopmostTextView = nextTopTextView
+        
+        let gestureRec = UITapGestureRecognizer()
+        gestureRec.numberOfTapsRequired = 2
+        gestureRec.delegate = self
+        gestureRec.addTarget(self, action: #selector(playerOneMultipleTap(_:event:)))
+        
+        playerOneTopmostTextView.addGestureRecognizer(gestureRec)
     }
+    
     func playerTwoMultipleTap(_ sender: UIButton, event: UIEvent) {
-        let touch: UITouch = event.allTouches!.first!
-        if (touch.tapCount == 2) {
-            //playerTwoPreviousCounterSuperView.sendSubview(toBack: <#T##UIView#>)
-            // TODO:do action
+        var nextTopTextView : UITextView!
+        if playerTwoTopmostTextView == playerTwoPreviousLifeTotalTextView {
+            nextTopTextView = playerTwoPreviousPoisonTotalTextView
+        } else if playerTwoTopmostTextView == playerTwoPreviousPoisonTotalTextView {
+            nextTopTextView = playerTwoPreviousEnergyTotalTextView
+        } else if playerTwoTopmostTextView == playerTwoPreviousEnergyTotalTextView {
+            nextTopTextView = playerTwoPreviousExperienceTotalTextView
+        } else if playerTwoTopmostTextView == playerTwoPreviousExperienceTotalTextView {
+            nextTopTextView = playerTwoPreviousLifeTotalTextView
         }
+        playerTwoPreviousCounterSuperView.bringSubview(toFront: nextTopTextView)
+        //playerTwoPreviousCounterSuperView.bringSubview(toFront: playerTwoSwitchPreviousCounterViewButton)
+        playerTwoTopmostTextView = nextTopTextView
+        
+        let gestureRec = UITapGestureRecognizer()
+        gestureRec.numberOfTapsRequired = 2
+        gestureRec.delegate = self
+        gestureRec.addTarget(self, action: #selector(playerTwoMultipleTap(_:event:)))
+        
+        playerTwoTopmostTextView.addGestureRecognizer(gestureRec)
     }
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        playerOneNameLabel.text = "Player One"
-        playerTwoNameLabel.text = "Player Two"
+        playerOneTopmostTextView = playerOnePreviousLifeTotalTextView
+        playerTwoTopmostTextView = playerTwoPreviousLifeTotalTextView
+        playerOneNameLabel.text = playerOne.self.name
+        playerTwoNameLabel.text = playerTwo.self.name
         playerOneLifeTotalLabel.text = String(playerOne.lifeTotal)
         playerTwoLifeTotalLabel.text = String(playerTwo.lifeTotal)
         
@@ -301,9 +338,25 @@ class LifeManagementViewController: UIViewController, OptionsViewControllerProto
             playerTwoPreviousExperienceTotalTextView.isHidden = true
         }
         
-        playerOneSwitchPreviousCounterViewButton.addTarget(self, action: #selector(playerOneMultipleTap(_:event:)), for: UIControlEvents.touchDownRepeat)
+        let gestureRec = UITapGestureRecognizer()
+        gestureRec.numberOfTapsRequired = 2
+        gestureRec.delegate = self
+        gestureRec.addTarget(self, action: #selector(playerOneMultipleTap(_:event:)))
+        gestureRec.addTarget(self, action: #selector(playerTwoMultipleTap(_:event:)))
         
-        playerTwoSwitchPreviousCounterViewButton.addTarget(self, action: #selector(playerTwoMultipleTap(_:event:)), for: UIControlEvents.touchDownRepeat)
+        for individualSubview in playerOnePreviousCounterSuperView.subviews
+        {
+            individualSubview.addGestureRecognizer(gestureRec)
+        }
+        for individualSubview in playerTwoPreviousCounterSuperView.subviews
+        {
+            individualSubview.addGestureRecognizer(gestureRec)
+        }
+
+        
+        //playerOneSwitchPreviousCounterViewButton.addTarget(self, action: #selector(playerOneMultipleTap(_:event:)), for: UIControlEvents.touchDownRepeat)
+        
+        //playerTwoSwitchPreviousCounterViewButton.addTarget(self, action: #selector(playerTwoMultipleTap(_:event:)), for: UIControlEvents.touchDownRepeat)
 
         
 

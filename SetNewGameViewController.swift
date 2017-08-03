@@ -16,6 +16,8 @@ class SetNewGameViewController: UIViewController {
     @IBOutlet weak var setNumberOfPlayersSegmentedControlOutlet: UISegmentedControl!
     @IBOutlet weak var numberOfPlayersLabel: UILabel!
     @IBOutlet weak var startingLifeTotalLabel: UILabel!
+    @IBOutlet weak var playerOneNameChangeTextField: UITextField!
+    @IBOutlet weak var playerTwoNameChangeTextField: UITextField!
     
     
     @IBAction func setStartingLifeTotalSegmentedControlAction(_ sender: Any) {
@@ -61,8 +63,10 @@ class SetNewGameViewController: UIViewController {
         switch selectedNumberOfPlayersSegmentIndex {
         case 0:
             numberOfPlayers = 1
+            playerTwoNameChangeTextField.isHidden = true
         case 1:
             numberOfPlayers = 2
+            playerTwoNameChangeTextField.isHidden = false
         default:
             break
         }
@@ -80,5 +84,15 @@ class SetNewGameViewController: UIViewController {
         let lifeManagementViewController = segue.destination as! LifeManagementViewController
         lifeManagementViewController.playerOne.lifeTotal = startingLifeTotal
         lifeManagementViewController.playerTwo.lifeTotal = startingLifeTotal
+        if playerOneNameChangeTextField.text == nil {
+            lifeManagementViewController.playerOne.name = "Player One"
+        } else {
+            lifeManagementViewController.playerOne.name = playerOneNameChangeTextField.text!
+        }
+        if playerTwoNameChangeTextField.text == nil {
+            lifeManagementViewController.playerTwo.name = "Player Two"
+        } else {
+            lifeManagementViewController.playerTwo.name = playerTwoNameChangeTextField.text!
+        }
     }
 }
